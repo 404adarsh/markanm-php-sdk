@@ -325,7 +325,7 @@ composer validate --strict
 composer dump-autoload
 ```
 
-Packagist reads package versions from Git tags. For a release, update the package as needed, commit the changes, create a semantic version tag (for example, `0.1.1`), push the branch and tag, and ensure Packagist has refreshed the repository. Set up the Packagist GitHub hook so future pushes are detected automatically.
+Packagist reads package versions from Git tags. For a release, update the package as needed, commit the changes, create a semantic version tag (for example, `0.1.1`), push the branch and tag, and ensure Packagist has refreshed the repository. Set up the Packagist GitHub hook so pushes are detected automatically. After adding or correcting the hook, push a new commit to trigger a fresh Packagist update; confirm the delivery succeeds in GitHub repository Settings → Webhooks and check the package update log on Packagist.
 
 ## License
 
