@@ -40,10 +40,26 @@ final class Client
         if ($token === '') throw new MarkanMException('A non-empty bot token is required');
         $this->baseUrl = rtrim($baseUrl, '/');
     }
+    private function normalizeAvatarUrls(mixed $value): mixed
+    {
+        $parts = parse_url($this->baseUrl) ?: [];
+        $scheme = $parts['scheme'] ?? 'https';
+        $origin = $scheme . '://' . ($parts['host'] ?? 'chat.markanm.com') . (isset($parts['port']) ? ':' . $parts['port'] : '');
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                if ($key === 'avatar_url' && is_string($item) && trim($item) !== '') {
+                    if (str_starts_with($item, '//')) $item = $scheme . ':' . $item;
+                    elseif (!preg_match('#^https?://#i', $item)) $item = $origin . '/' . ltrim($item, '/');
+                }
+                $value[$key] = $this->normalizeAvatarUrls($item);
+            }
+        }
+        return $value;
+    }
     public function request(string $method, string $path, ?array $body = null): array
     {
         $url = $this->baseUrl . '/' . ltrim($path, '/');
-        $headers = "Authorization: Bearer {$this->token}\r\nContent-Type: application/json\r\nAccept: application/json\r\nUser-Agent: markanm-php-sdk/0.1.0\r\n";
+        $headers = "Authorization: Bearer {$this->token}\r\nContent-Type: application/json\r\nAccept: application/json\r\nUser-Agent: markanm-php-sdk/0.1.1\r\n";
         $options = ['http' => ['method' => strtoupper($method), 'header' => $headers, 'timeout' => $this->timeout, 'ignore_errors' => true]];
         if ($body !== null) $options['http']['content'] = json_encode($body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         $context = stream_context_create($options);
@@ -73,7 +89,7 @@ final class Client
             };
             throw new $exception("HTTP {$status} [{$code}]: {$message}", $status, $code, $requestId, $status === 429 ? $retryAfter : 0);
         }
-        return $data;
+        return $this->normalizeAvatarUrls($data);
     }
     public function get(string $path): array { return $this->request('GET', $path); }
     public function post(string $path, array $body = []): array { return $this->request('POST', $path, $body); }

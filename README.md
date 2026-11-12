@@ -8,9 +8,12 @@ The official PHP SDK for building bots on the MarkanM Chat Bot Platform. It prov
 - **API reference:** [MarkanM developer documentation](https://chat.markanm.com/developers/docs)
 - **License:** MIT
 
+Other official bot SDKs using the same bot API: [Python / pip (`markanm`)](https://pypi.org/project/markanm/) · [Node.js / npm (`@markanm/bot`)](https://www.npmjs.com/package/@markanm/bot).
+
 ## Contents
 
 - [Installation](#installation)
+- [Run locally from your computer](#run-locally-from-your-computer)
 - [Requirements and configuration](#requirements-and-configuration)
 - [Quick start: polling bot](#quick-start-polling-bot)
 - [Commands and events](#commands-and-events)
@@ -39,6 +42,35 @@ require __DIR__ . '/vendor/autoload.php';
 
 use MarkanM\Bot\Bot;
 ```
+
+## Run locally from your computer
+
+Polling runs as a normal PHP command-line process. You do **not** need to open a port, configure a public URL, or start Apache/Nginx for local polling. Your computer only needs PHP 8.1+, Composer, JSON support, a working CA certificate bundle, and outbound HTTPS access.
+
+Create a bot folder, install the SDK, save the [quick-start example](#quick-start-polling-bot) as `bot.php`, set your token in the terminal, and start the script:
+
+```powershell
+mkdir my-markanm-bot
+cd my-markanm-bot
+composer require markanm/bot
+$env:MARKANM_BOT_TOKEN = 'mkbot_your_token'
+php .\bot.php
+```
+
+On macOS or Linux:
+
+```bash
+mkdir my-markanm-bot && cd my-markanm-bot
+composer require markanm/bot
+export MARKANM_BOT_TOKEN='mkbot_your_token'
+php bot.php
+```
+
+Keep the terminal open while the bot is running and stop it with Ctrl+C. For a deployed bot, configure the token using your host's environment/secret settings. Never commit the token or a `.env` file.
+
+Polling lets a local script connect out to MarkanM, so it works on localhost and on networks where inbound ports are unavailable. Webhooks are different: MarkanM must be able to call a public HTTPS URL. A localhost callback is not reachable from MarkanM. On shared hosting that blocks long-running CLI processes, use webhooks if the host supports PHP HTTPS endpoints.
+
+Incoming event `user.avatar_url` values are absolute URLs. For example, `/backend/uploads/avatar.jpg` is returned as `https://chat.markanm.com/backend/uploads/avatar.jpg`. The SDK also normalizes relative URLs from events that were queued before this update. If using a self-hosted API, it builds the URL using the API base URL's origin.
 
 ## Requirements and configuration
 
